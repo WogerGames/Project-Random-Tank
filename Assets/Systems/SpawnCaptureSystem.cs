@@ -9,7 +9,7 @@ using System.Linq;
 
 sealed class SpawnCaptureSystem : IEcsRunSystem
 {
-    readonly EcsFilter<PLayerComponent> players;
+    readonly EcsFilter<PlayerComponent> players;
     readonly EcsFilter<SpawnComponent> spawns;
 
     readonly Dictionary<TeamNum, SpawnType> teams = new Dictionary<TeamNum, SpawnType>
@@ -18,7 +18,7 @@ sealed class SpawnCaptureSystem : IEcsRunSystem
         { TeamNum.Two, SpawnType.Command_2 }
     };
 
-    float captureSpeed = 0.18f;
+    float captureSpeed = 0.018f;
 
     void IEcsRunSystem.Run()
     {

@@ -9,7 +9,7 @@ sealed class DamageSystem : IEcsRunSystem
     
     readonly EcsFilter<ProjectileCollisionEvent> events;
     readonly EcsFilter<ProjectileComponent> projectiles;
-    readonly EcsFilter<PLayerComponent, HealthPointComponent> players;
+    readonly EcsFilter<PlayerComponent, HealthPointComponent> players;
 
     void IEcsRunSystem.Run()
     {
@@ -23,12 +23,17 @@ sealed class DamageSystem : IEcsRunSystem
                 {
                     ref var hp = ref players.Get2(idx);
 
-                    hp.Value--;
-                    events.Get1(p).player.OnDamage(hp.Value);
+                    if (player.view.IsMine())
+                    {
+                        //Debug.Log(events.Get1(p).damageData.Damage);
+                        hp.Value -= events.Get1(p).damageData.Damage;
+                        hp.Value = Mathf.Clamp(hp.Value, 0, int.MaxValue);
+                        events.Get1(p).player.OnDamage(hp.Value);
+                    }
 
                     if(hp.Value <= 0)
                     {
-                        players.GetEntity(idx).Get<DestroyEvent>();
+                        players.GetEntity(idx).Get<DestroyEvent>().DestroyerID = events.Get1(p).damageData.OwnerId;
                     }
                 }
             }

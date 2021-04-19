@@ -96,6 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b45c5cba42b22f4cb9e3d5f08849a38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  projectile: {fileID: -3998221958279343515}
 --- !u!114 &-3998221958279343515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,5 +113,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   ishit: 0
-  ebat: 0
+  ViewID: 0
+  hitPhotonView: {fileID: 0}
   lifetime: 0

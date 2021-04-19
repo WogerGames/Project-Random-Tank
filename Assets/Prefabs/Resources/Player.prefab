@@ -55,6 +55,48 @@ MonoBehaviour:
   projectile: {fileID: 505310654268564359, guid: 9ac46b6e5052ae240b32446cda38045d, type: 3}
   hpText: {fileID: 7191494355861913301}
   collider: {fileID: 7101439508863552383}
+  progressCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.5805291
+      outSlope: 0.5805291
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.15498658
+    - serializedVersion: 3
+      time: 2
+      value: 1
+      inSlope: 0.4
+      outSlope: 0.4
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 5
+      value: 2
+      inSlope: 0.31186497
+      outSlope: 0.31186497
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.10127074
+    - serializedVersion: 3
+      time: 12
+      value: 3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   team: 0
 --- !u!114 &1407054089950245965
 MonoBehaviour:
@@ -108,6 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31b767bb86352e74fae9ec27f6db3c4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cooldownValue: 0.18
+  maxHealthPoint: 30
+  damage: 1
 --- !u!114 &3546317985614717922
 MonoBehaviour:
   m_ObjectHideFlags: 0

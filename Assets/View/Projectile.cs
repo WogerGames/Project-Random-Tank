@@ -22,22 +22,25 @@ public class Projectile : MonoBehaviour
 
     public float lifetime = 0;
 
-    IEnumerator Start()
+    DamageData DamageData;
+
+    void Start()
     {
         prevPoint = transform.position;
         curPoint = transform.position;
-
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForEndOfFrame();
-        
-
     }
 
+    public void Init(DamageData damageData)
+    {
+        DamageData = damageData;
+    }
 
     void Update()
     {
         CheckCollision();
         lifetime += Time.deltaTime;
+
+        
     }
 
     void CheckCollision()
@@ -48,8 +51,6 @@ public class Projectile : MonoBehaviour
 
         if (hit.Length > 0 && lifetime > 0.1f)
         {
-            //Debug.Log(hit.First().transform);
-
             var raycastHit = hit.ToList().Find(h => h.transform.GetComponent<Player>() != null);
             
             if (!raycastHit.transform)
@@ -59,9 +60,13 @@ public class Projectile : MonoBehaviour
 
             if (player)
             {
+                if (player.photonView.ViewID == DamageData.OwnerId)
+                    return;
+
                 var e = GameManager.Instance.EcsWorld.NewEntity();
                 e.Get<ProjectileCollisionEvent>().player = player;
                 e.Get<ProjectileCollisionEvent>().projectile = this;
+                e.Get<ProjectileCollisionEvent>().damageData = DamageData; 
 
                 if (player.photonView)
                 {

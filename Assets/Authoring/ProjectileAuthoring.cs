@@ -5,10 +5,12 @@ using Leopotam.Ecs;
 
 public class ProjectileAuthoring : Authoring<ProjectileComponent>
 {
+    [SerializeField] Projectile projectile;
+
     protected override void Start()
     {
         base.Start();
 
-        entity.Get<ProjectileComponent>().view = GetComponent<Projectile>();
+        entity.Get<ProjectileComponent>().view = projectile;
     }
 }

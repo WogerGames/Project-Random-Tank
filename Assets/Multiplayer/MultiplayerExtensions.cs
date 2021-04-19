@@ -17,10 +17,28 @@ public static class MultiplayerExtensions
             MultiplayerManager.RaiseEvent(photonView, eventCode);
     }
 
-    public static void RaiseEvent<T>(this PhotonView photonView, EventCode eventCode, T data)
+    public static void RaiseEvent<T>(this PhotonView photonView, EventCode eventCode, T data, int targetActor)
     {
         if (photonView.Owner != null && photonView.IsMine)
-            MultiplayerManager.RaiseEvent(eventCode, data);
+        {
+            MultiplayerManager.RaiseEvent(eventCode, data, targetActor);
+        }
+    }
+
+    public static void RaiseEvent<T>(this PhotonView photonView, EventCode eventCode, T data, bool targetActor = false)
+    {
+        if (photonView.Owner != null && photonView.IsMine)
+        {
+            if (targetActor)
+            {
+                MultiplayerManager.RaiseEvent(photonView, eventCode, data);
+            }
+            else
+            {
+                MultiplayerManager.RaiseEvent(eventCode, data);
+            }
+        }
+            
     }
 
     public static void RegisterMethod(this PhotonView photonView, EventCode eventCode, Action method)

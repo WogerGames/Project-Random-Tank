@@ -47,7 +47,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
         SpawnPlayer();
         
         PhotonPeer.RegisterType(typeof(EventHpContent), 012, SerializeEventHpContent, DeserializeEventHpContent);
-        PhotonPeer.RegisterType(typeof(EventTurnProjectileContent), 011, SerializeEventTurnContent, DeserializeEventTurnContent);
+        PhotonPeer.RegisterType(typeof(FirePhotonData), 011, SerializeEventTurnContent, DeserializeEventTurnContent);
         PhotonPeer.RegisterType(typeof(EnemyHealthPoint), 015, SerializeHealthPoint, DeserializeEnemyHealthPoint);
         //PhotonPeer.RegisterType(typeof(CreateDiceParams), 017, SerializeCreateDiceParams, DeserializeCreateDiceParams);
 
@@ -77,6 +77,22 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public static void DestroyByPhoton(GameObject target)
     {
         PhotonNetwork.Destroy(target);
+    }
+
+    public static void RaiseEvent<T>(EventCode eventCode, T data, int targetActor)
+    {
+        RaiseEventOptions option = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        SendOptions sendOptions = new SendOptions { Reliability = true };
+        option.TargetActors = new int[] { targetActor };
+        PhotonNetwork.RaiseEvent((byte)eventCode, data, option, sendOptions);
+    }
+
+    public static void RaiseEvent<T>(PhotonView actor, EventCode eventCode, T data)
+    {
+        RaiseEventOptions option = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        SendOptions sendOptions = new SendOptions { Reliability = true };
+        option.TargetActors = new int[] { actor.OwnerActorNr };
+        PhotonNetwork.RaiseEvent((byte)eventCode, data, option, sendOptions);
     }
 
     public static void RaiseEvent<T>(EventCode eventCode, T data)
@@ -273,6 +289,10 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     {
                         (actor as ParamMethods<CreateDiceParams>).paramMethod?.Invoke((CreateDiceParams)photonEvent.CustomData);
                     }
+                    if (data is FirePhotonData)
+                    {
+                        (actor as ParamMethods<FirePhotonData>).paramMethod?.Invoke((FirePhotonData)photonEvent.CustomData);
+                    }
                 }
 
             }
@@ -304,19 +324,19 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public static object DeserializeEventTurnContent(byte[] data)
     {
-        EventTurnProjectileContent result = new EventTurnProjectileContent
+        FirePhotonData result = new FirePhotonData
         {
-            ActorNumber = BitConverter.ToInt32(data, 0),
-            zAngle = BitConverter.ToInt32(data, 4)
+            viewID = BitConverter.ToInt32(data, 0),
+            zAngle = BitConverter.ToSingle(data, 4)
         };
         return result;
     }
 
     public static byte[] SerializeEventTurnContent(object obj)
     {
-        EventTurnProjectileContent ehc = (EventTurnProjectileContent)obj;
+        FirePhotonData ehc = (FirePhotonData)obj;
         byte[] result = new byte[8];
-        BitConverter.GetBytes(ehc.ActorNumber).CopyTo(result, 0);
+        BitConverter.GetBytes(ehc.viewID).CopyTo(result, 0);
         BitConverter.GetBytes(ehc.zAngle).CopyTo(result, 4);
         return result;
     }
@@ -369,10 +389,10 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 }
 
-public class EventTurnProjectileContent
+public class FirePhotonData
 {
     public float zAngle;
-    public int ActorNumber;
+    public int viewID;
 }
 
 public class EventHpContent
@@ -389,8 +409,11 @@ public enum EventCode
     WeaponSpellDeactivation = 18,
     EnemySetHealthPoint = 11,
     EnemyDestroyed = 69,
-    DiceCreated = 30,
-    DiceRemoved = 10,
+    
+    // PERKS
+    Perk1 = 30,
+    Perk2 = 31,
+    Perk3 = 32
 }
 
 public class EventAction

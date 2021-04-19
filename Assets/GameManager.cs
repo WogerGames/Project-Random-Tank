@@ -5,19 +5,30 @@ using Leopotam.Ecs;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] int countAI = 3;
+    [SerializeField] float delayBetweenSpawn = .3f;
     [SerializeField] GameObject playerAIPrefab;
+    [SerializeField] UI ui;
 
     public Joystick rotationJoystick;
 
     public static GameManager Instance;
 
+    private EcsWorld ecsWorld;
+
     public EcsWorld EcsWorld
     {
         get
         {
-            return FindObjectOfType<Godlike>()?.EcsWorld;
+            if(ecsWorld == null)
+            {
+                ecsWorld = FindObjectOfType<Godlike>()?.EcsWorld;
+            }
+            return ecsWorld;
         }
     }
+
+    public UI UI => ui;
 
     private void Awake()
     {
@@ -35,9 +46,9 @@ public class GameManager : MonoBehaviour
 
         IEnumerator Spawn()
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < countAI; i++)
             {
-                yield return new WaitForSeconds(.01f);
+                yield return new WaitForSeconds(delayBetweenSpawn);
 
                 if (MultiplayerManager.IsMaster)
                 {

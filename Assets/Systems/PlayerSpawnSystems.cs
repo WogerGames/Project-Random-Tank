@@ -10,17 +10,18 @@ using System.Linq;
 sealed class PlayerSpawnSystems : IEcsRunSystem
 {
     readonly EcsFilter<PlayerSpawnEvent> events;
-    readonly EcsFilter<PLayerComponent, HealthPointComponent> playersFilter;
+    readonly EcsFilter<PlayerComponent, HealthPointComponent> playersFilter;
     readonly EcsFilter<BattleComponent> battleFilter;
     readonly EcsFilter<SpawnComponent> spawnsFilter;
 
     readonly List<SpawnComponent> spawns = new List<SpawnComponent>();
-    readonly List<PLayerComponent> players = new List<PLayerComponent>();
+    readonly List<PlayerComponent> players = new List<PlayerComponent>();
 
-    int playerHp = 30;
-
+   
     void IEcsRunSystem.Run()
     {
+        spawns.Clear();
+        players.Clear();
         foreach (var i in spawnsFilter) spawns.Add(spawnsFilter.Get1(i));
         foreach (var i in playersFilter) players.Add(playersFilter.Get1(i));
         //Debug.Log(events.GetEntitiesCount());
@@ -29,25 +30,25 @@ sealed class PlayerSpawnSystems : IEcsRunSystem
         List<Player> photonPlayers = new List<Player>();
         foreach (var e in events) photonPlayers.Add(events.Get1(e).player);
         //photonPlayers.ForEach(p => Debug.Log(p.photonView.OwnerActorNr + " -***"));
+       
         photonPlayers = photonPlayers.OrderBy(p => p.photonView.OwnerActorNr).ToList();
         //photonPlayers.ForEach(p => Debug.Log(p.photonView.OwnerActorNr + " -+++"));
 
         foreach (var e in photonPlayers)
         {
-            Debug.Log($"{PhotonNetwork.PlayerList.Length % 2} ...");
+            //Debug.Log($"{PhotonNetwork.PlayerList.Length % 2} ...");
            
             var spawned = e;
 
             var player = players.Find(p => p.view == spawned);
            
             EcsEntity entity = GetPlayerEntity(player);
-            Debug.Log(GetPlayerEntity(player));
-            entity.Get<HealthPointComponent>().Value = playerHp;
+            entity.Get<HealthPointComponent>().Value = player.maxHealthPoint;
 
             foreach (var b in battleFilter)
             {
                 ref var battle = ref battleFilter.Get1(b);
-
+                bool isSpawned = false;
                 SpawnComponent spawn = default;
 
                 // Получение порядкового номера
@@ -56,30 +57,38 @@ sealed class PlayerSpawnSystems : IEcsRunSystem
 
                 if (id % 2 > 0)
                 {
-                    spawn = spawns.Find(s => s.spawnType == SpawnType.Command_1);
-                    battle.teamOne.Add(entity);
-                    entity.Get<PLayerComponent>().teamNum = TeamNum.One;
-                    player.teamNum = TeamNum.One;
+                    if (GetRandomSpawn(SpawnType.Command_1, out spawn))
+                    {
+                        battle.teamOne.Add(entity);
+                        entity.Get<PlayerComponent>().teamNum = TeamNum.One;
+                        player.teamNum = TeamNum.One;
+                        isSpawned = true;
+                    }
+                    //entity.Get<HealthPointComponent>().Value = 50;
                 }
                 else
                 {
-                    spawn = spawns.Find(s => s.spawnType == SpawnType.Command_2);
-                    battle.teamTwo.Add(entity);
-                    entity.Get<PLayerComponent>().teamNum = TeamNum.Two;
-                    player.teamNum = TeamNum.Two;
+                    if (GetRandomSpawn(SpawnType.Command_2, out spawn))
+                    {
+                        battle.teamTwo.Add(entity);
+                        entity.Get<PlayerComponent>().teamNum = TeamNum.Two;
+                        player.teamNum = TeamNum.Two;
+                        isSpawned = true;
+                    }
                 }
-                
 
-                player.view.collider.enabled = true;
-                player.view.OnDamage(playerHp);
-
-                if (player.view.photonView.IsMine)
+                if (isSpawned)
                 {
-                    player.view.transform.position = spawn.pos + GetRandomOffset();
-                }
+                    player.view.collider.enabled = true;
+                    player.view.OnDamage(player.maxHealthPoint);
 
-                Debug.Log($"тима двэ {battle.teamTwo.Count} || тима одын {battle.teamOne.Count} поз хуёз {player.view.transform.position}");
-                
+                    if (player.view.photonView.IsMine)
+                    {
+                        player.view.transform.position = spawn.pos + GetRandomOffset();
+                    }
+
+                    //Debug.Log($"тима двэ {battle.teamTwo.Count} || тима одын {battle.teamOne.Count} поз хуёз {player.view.transform.position}");
+                }
             }
 
             
@@ -94,7 +103,7 @@ sealed class PlayerSpawnSystems : IEcsRunSystem
         return new Vector2(x, y) * 1.5f;
     }
 
-    EcsEntity GetPlayerEntity(PLayerComponent player)
+    EcsEntity GetPlayerEntity(PlayerComponent player)
     {
         foreach (var i in playersFilter)
         {
@@ -104,5 +113,17 @@ sealed class PlayerSpawnSystems : IEcsRunSystem
             }
         }
         return default;
+    }
+
+    bool GetRandomSpawn(SpawnType spawnType, out SpawnComponent spawn)
+    {
+        spawn = default;
+        var spawnsTeam = spawns.FindAll(s => s.spawnType == spawnType);
+        if (spawnsTeam.Count > 0)
+        {
+            spawn = spawnsTeam[Random.Range(0, spawnsTeam.Count)];
+            return true;
+        }
+        return false;
     }
 }

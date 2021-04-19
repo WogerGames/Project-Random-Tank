@@ -3,7 +3,7 @@ using Leopotam.Ecs;
 
 sealed class HpShowSystem : IEcsRunSystem
 {
-    EcsFilter<PLayerComponent, HealthPointComponent> players;
+    EcsFilter<PlayerComponent, HealthPointComponent> players;
 
     void IEcsRunSystem.Run()
     {

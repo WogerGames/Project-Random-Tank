@@ -8,7 +8,7 @@ sealed class FireSystem : IEcsRunSystem
 {
     
     GameManager gameManager;
-    EcsFilter<PLayerComponent>.Exclude<AIControllerComponent> players;
+    EcsFilter<PlayerComponent>.Exclude<AIControllerComponent> players;
 
     void IEcsRunSystem.Run()
     {
@@ -21,9 +21,9 @@ sealed class FireSystem : IEcsRunSystem
             if (plr.view.GetComponent<PhotonView>().IsMine)
             {
 
-                if (plr.cooldownRate >= 0.18f && gameManager.rotationJoystick.Direction.magnitude > 0)
+                if (plr.cooldownRate >= plr.cooldownValue && gameManager.rotationJoystick.Direction.magnitude > 0)
                 {
-                    plr.view.Fire();
+                    plr.view.Fire(plr.damage);
                     plr.cooldownRate = 0;
                 }
             }

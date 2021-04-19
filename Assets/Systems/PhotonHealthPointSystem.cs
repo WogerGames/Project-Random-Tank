@@ -7,7 +7,7 @@ using ExitGames.Client.Photon;
 sealed class PhotonHealthPointSystem : IEcsRunSystem
 {
     EcsFilter<PhotonHealthPointEvent> events;
-    EcsFilter<PLayerComponent, HealthPointComponent> players;
+    EcsFilter<PlayerComponent, HealthPointComponent> players;
 
     void IEcsRunSystem.Run()
     {
@@ -19,6 +19,7 @@ sealed class PhotonHealthPointSystem : IEcsRunSystem
                 if(view.photonView.ViewID == events.Get1(e).ViewID)
                 {
                     players.Get2(p).Value = events.Get1(e).hp;
+                    players.Get2(p).Value = Mathf.Clamp(players.Get2(p).Value, 0, int.MaxValue);
                 }
             }
         }

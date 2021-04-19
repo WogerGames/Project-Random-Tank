@@ -8,7 +8,7 @@ sealed class InputControllerSystem : IEcsRunSystem
 {
     readonly Joystick joystick;
 
-    readonly EcsFilter<PLayerComponent, MoveComponent>.Exclude<AIControllerComponent> players;
+    readonly EcsFilter<PlayerComponent, MoveComponent>.Exclude<AIControllerComponent> players;
 
     void IEcsRunSystem.Run()
     {

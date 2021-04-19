@@ -6,7 +6,7 @@ using ExitGames.Client.Photon;
 
 sealed class RotationSystem : IEcsRunSystem
 {
-    EcsFilter<PLayerComponent>.Exclude<AIControllerComponent> players;
+    EcsFilter<PlayerComponent>.Exclude<AIControllerComponent> players;
     GameManager gameManager;
 
     void IEcsRunSystem.Run()
@@ -19,11 +19,17 @@ sealed class RotationSystem : IEcsRunSystem
 
             if (view.GetComponent<PhotonView>().IsMine)
             {
-
+                
                 var direction = gameManager.rotationJoystick.Direction;
                 direction.x *= -1f;
-                float angle = Vector2.SignedAngle(direction, Vector2.up);
+                float angleTarget = Vector2.SignedAngle(direction, Vector2.up);
+                float angleCurrent = view.transform.rotation.eulerAngles.z;
+
+                
+                float angle = Mathf.LerpAngle(angleCurrent, angleTarget, .3f);
+                
                 Quaternion rotation = Quaternion.Euler(0, 0, angle);
+
                 view.transform.rotation = rotation;
             }
         }

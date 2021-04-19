@@ -8,7 +8,7 @@ sealed class MovementSystem : IEcsRunSystem
 {
     
 
-    EcsFilter<PLayerComponent, MoveComponent> players;
+    EcsFilter<PlayerComponent, MoveComponent> players;
 
     void IEcsRunSystem.Run()
     {

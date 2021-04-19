@@ -4,7 +4,7 @@ using UnityEngine;
 
 sealed class AIMoveDirectionSystem : IEcsRunSystem
 {
-    readonly EcsFilter<PLayerComponent, MoveComponent, AIControllerComponent> players;
+    readonly EcsFilter<PlayerComponent, MoveComponent, AIControllerComponent> players;
 
     void IEcsRunSystem.Run()
     {

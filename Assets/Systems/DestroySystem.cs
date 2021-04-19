@@ -6,8 +6,9 @@ using ExitGames.Client.Photon;
 
 sealed class DestroySystem : IEcsRunSystem
 {
-    readonly EcsFilter<PLayerComponent, DestroyEvent> players;
-    readonly EcsFilter<PLayerComponent> ebachi;
+    readonly EcsFilter<PlayerComponent, DestroyEvent> players;
+    readonly EcsFilter<PlayerComponent> ebachi;
+    readonly EcsFilter<ObjectComponent> allObjects;
 
 
     void IEcsRunSystem.Run()
@@ -17,17 +18,26 @@ sealed class DestroySystem : IEcsRunSystem
             players.Get1(p).view.GetComponentInChildren<SpriteRenderer>().color = Color.gray;
             players.Get1(p).view.collider.enabled = false;
             var playerID = players.GetEntity(p).GetInternalId();
-            
 
-            LeanTween.delayedCall(1, Respawn);
+            var player = players.Get1(p);
+
+            players.GetEntity(p).Del<PlayerComponent>();
+
+            LeanTween.delayedCall(3, Respawn);
 
             void Respawn()
             {
-                foreach (var i in ebachi)
+                foreach (var o in allObjects)
                 {
-                    if(ebachi.GetEntity(i).GetInternalId() == playerID)
+                    if(allObjects.Get1(o).go == player.view.gameObject)
                     {
-                        ebachi.GetEntity(i).Get<PlayerSpawnEvent>().player = ebachi.Get1(i).view;
+                        ref var p = ref allObjects.GetEntity(o).Get<PlayerComponent>();
+                        //p.view = player.view;
+                        //p.teamNum = player.teamNum;
+                        //p.currentProgress = player.currentProgress;
+                        allObjects.GetEntity(o).Replace(player);
+
+                        allObjects.GetEntity(o).Get<PlayerSpawnEvent>().player = player.view;
                     }
                 }
             }
