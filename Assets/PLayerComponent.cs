@@ -8,6 +8,5 @@ public struct PlayerComponent
     public int currentProgress;
 
     public float cooldownValue;
-    public int maxHealthPoint;
     public int damage;
 }

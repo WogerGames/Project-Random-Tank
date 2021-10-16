@@ -19,19 +19,21 @@ sealed class AIRotationSystem : IEcsRunSystem
 
             if (!view.GetComponent<PhotonView>()) continue;
 
-            if (players.Get2(p).enemyTarget)
+            var enemyTarget = players.Get2(p).enemyTarget;
+
+            if (enemyTarget)
             {
-                var playerPos = view.transform.position;
-                var enemyPos = players.Get2(p).enemyTarget.position;
+                var playerPos = new Vector2(view.transform.position.x, view.transform.position.z);
+                var enemyPos = new Vector2 (enemyTarget.position.x, enemyTarget.position.z);
 
                 var direction = enemyPos - playerPos;
-                direction.x *= -1f;
+                //direction.x *= -1f;
 
                 float angleTarget = Vector2.SignedAngle(direction, Vector2.up);
-                float angleCurrent = view.transform.rotation.eulerAngles.z;
+                float angleCurrent = view.transform.rotation.eulerAngles.y;
                 float angle = Mathf.LerpAngle(angleCurrent, angleTarget, .1f);
 
-                Quaternion rotation = Quaternion.Euler(0, 0, angle);
+                Quaternion rotation = Quaternion.Euler(0, angle, 0);
                 view.transform.rotation = rotation;
             }
         }

@@ -9,6 +9,8 @@ public class Godlike : MonoBehaviour
     [SerializeField] GameManager gameManager;
     [SerializeField] Joystick joystick;
 
+    private PlayerManager playerManager;
+
     private EcsWorld ecsWorld;
     private EcsSystems systems;
     private EcsSystems systemsPhysics;
@@ -27,6 +29,8 @@ public class Godlike : MonoBehaviour
         systemsPhysics = new EcsSystems(ecsWorld);
         random = new System.Random();
 
+        playerManager = FindObjectOfType<PlayerManager>();
+
 #if UNITY_EDITOR
         Leopotam.Ecs.UnityIntegration.EcsWorldObserver.Create(ecsWorld);
         Leopotam.Ecs.UnityIntegration.EcsSystemsObserver.Create(systems);
@@ -39,12 +43,13 @@ public class Godlike : MonoBehaviour
             .Add(new CooldownRateSystem())
             .Add(new FireSystem())
             .Add(new ProjectileMoveSystem())
+            .Add(new IncreaseSystem())
             .Add(new DamageSystem())
             .Add(new HpShowSystem())
             .Add(new PhotonHealthPointSystem())
-            .Add(new PlayerSpawnSystems())
+            .Add(new SpawnPlayerSystems())
             .Add(new DestroySystem())
-            .Add(new SpawnCaptureSystem())
+            .Add(new CaptureSpawnSystem())
             .Add(new SpawnInitSystem())
             .Add(new CrossCaptureSystem())
             .Add(new ProjectileLifetimeSystem())
@@ -59,23 +64,31 @@ public class Godlike : MonoBehaviour
             .Add(new AIFireSystem())
             .Add(new AIPerkSystem())
 
-            
-
             .Add(new Perk1System())
             .Add(new Perk2System())
             .Add(new Perk3System())
-            //.Add(new AIMoveDirectionSystem())
-            //.Add(new AIMoveDirectionSystem())
+
+            .Add(new CompleteGameSystem())
+            .Add(new UICompleteGameSystem())
+            .Add(new PlayerDataSystem())// TEmporary solutione áëýò
+            .Add(new IncreaseUISystem())
+            .Add(new PhotonIncreaseInitSystem())
+            .Add(new PhotonIncreaseSystem())
+
+
             .OneFrame<PhotonHealthPointEvent>()
             .OneFrame<ProjectileCollisionEvent>()
             .OneFrame<PlayerSpawnEvent>()
             .OneFrame<DestroyEvent>()
             .OneFrame<ProgressEvent>()
+            .OneFrame<CompleteGameEvent>()
+            .OneFrame<IncreasedEvent>()
 
             .OneFrame<Perk1>()
             .OneFrame<Perk2>()
             .OneFrame<Perk3>()
 
+            
             .Inject(gameManager)
             .Inject(joystick);
 
@@ -84,6 +97,11 @@ public class Godlike : MonoBehaviour
             //.Add(new CarAccelerationSystem())
             //.Add(new CarDecelerationSystem())
             .Inject(gameManager);
+
+        if (playerManager)
+        {
+            systems.Inject(playerManager);
+        }
 
         systems.ProcessInjects();
         systemsPhysics.ProcessInjects();

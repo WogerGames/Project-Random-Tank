@@ -94,6 +94,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         print("Припиздяшил, Уебок " + PhotonNetwork.NickName);
         
         PhotonNetwork.LoadLevel(sceneNameToLoad);
+        
     }
 
     public void OnChangedMaxPlayers()

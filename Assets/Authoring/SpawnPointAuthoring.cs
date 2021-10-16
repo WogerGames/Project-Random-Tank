@@ -12,7 +12,7 @@ public class SpawnPointAuthoring : Authoring<SpawnComponent>
         base.Start();
 
         entity.Get<SpawnComponent>().spawnType = spawnType;
-        entity.Get<SpawnComponent>().pos = transform.position;
+        entity.Get<SpawnComponent>().pos = new Vector2(transform.position.x, transform.position.z);
         entity.Get<SpawnComponent>().captureValue = 0;
         entity.Get<SpawnComponent>().view = GetComponent<SpawnPoint>();
     }

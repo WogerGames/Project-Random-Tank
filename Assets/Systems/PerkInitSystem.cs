@@ -1,9 +1,11 @@
+using System.Collections;
+using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
 
 sealed class PerkInitSystem : IEcsRunSystem
 {
-
+    readonly PlayerManager playerManager;
     readonly EcsFilter<PlayerSpawnEvent> spawnEvent;
     readonly EcsFilter<PlayerComponent> players;
 
@@ -11,7 +13,7 @@ sealed class PerkInitSystem : IEcsRunSystem
     {
         foreach (var s in spawnEvent)
         {
-            IPerk[] perks = new IPerk[] { new Perk1(), new Perk2(), new Perk3() };
+            IPerk[] perks = ConvertToPerks(playerManager.perksUsed);
 
             var player = spawnEvent.Get1(s).player;
 
@@ -38,5 +40,17 @@ sealed class PerkInitSystem : IEcsRunSystem
                 perk.AddPerkToEntity(ref players.GetEntity(p));
             }
         }
+    }
+
+    IPerk[] ConvertToPerks(List<PerkData> perksData)
+    {
+        IPerk[] result = new IPerk[perksData.Count];
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = GameConfig.Perks[perksData[i].id];
+        }
+
+        return result;
     }
 }

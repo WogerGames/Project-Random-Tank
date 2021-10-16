@@ -12,8 +12,11 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
 {
     [SerializeField] GameObject projectile;
     [SerializeField] public TextMeshPro hpText;
-    [SerializeField] new public Collider2D collider;
+    [SerializeField] public TextMeshPro increaseLabel;
+    [SerializeField] new public Collider collider;
+    [Tooltip("Количество уничтоженных врагов для получения перка")]
     [SerializeField] AnimationCurve progressCurve;
+    [SerializeField] Vector2[] curvePoints = new Vector2[] { new Vector2(0, 0), new Vector2(5, 2), new Vector2(3, 12) };
     public IPerk[] perks;
 
     [Space]
@@ -21,8 +24,11 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
 
     public List<IPerk> usedPerks = new List<IPerk>();
 
+    public Action<EventCode, int> PerkEvent { get; set; }
+    public Action<IncreasePhotonData> IncreaseEvent { get; set; }
     public AnimationCurve ProgressCurve => progressCurve;
-    
+
+    public byte IncreaseValue { get; set; }
 
     void Awake()
     {
@@ -34,18 +40,44 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
         if (!photonView) return;
         photonView.RegisterMethod<FirePhotonData>(EventCode.PlayerStartAttack, NotMinePlayerFire);
         photonView.RegisterMethod<EnemyHealthPoint>(EventCode.EnemySetHealthPoint, SetHP);
+        photonView.RegisterMethod<IncreasePhotonData>(EventCode.Increase, NotMineIncreaseSet);
 
         GameManager.Instance.EcsWorld.NewEntity().Get<PlayerSpawnEvent>().player = this;
+
+        if (curvePoints.Length > 0) {
+            Keyframe[] keyframes = new Keyframe[curvePoints.Length];
+            for (int i = 0; i < keyframes.Length; i++)
+            {
+                var point = curvePoints[i];
+                keyframes[i] = new Keyframe(point.x, point.y);
+            }
+
+            progressCurve.keys = keyframes;
+        }
+
+        var navMesh = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        
+        if (MultiplayerManager.IsMaster) 
+        {
+            if (navMesh) navMesh.enabled = false;
+        }
+        else
+        {
+            Destroy(navMesh);
+        }
+            
     }
 
     public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
     {
         LeanTween.delayedCall(0.58f, SendPerkState);
+        LeanTween.delayedCall(0.93f, SendInreaseState);
 
-        void SendPerkState() => StartCoroutine(Send());
+        void SendPerkState() => StartCoroutine(SendPerk());
+        void SendInreaseState() => StartCoroutine(SendIncrease());
         
 
-        IEnumerator Send()
+        IEnumerator SendPerk()
         {
             foreach (var perk in usedPerks)
             {
@@ -55,6 +87,16 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
                 yield return new WaitForSeconds(0.3f);
             }
         }
+
+        IEnumerator SendIncrease()
+        {
+            if(IncreaseValue > 0)
+            {
+                var data = new IncreasePhotonData { viewID = photonView.ViewID, Value = IncreaseValue };
+                photonView.RaiseEvent(EventCode.Increase, data, newPlayer.ActorNumber);
+            }
+            yield return new WaitForSeconds(0.3f);
+        }
         
     }
 
@@ -62,13 +104,13 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
     {
         if (stream.IsWriting)
         {
-            stream.SendNext(transform.rotation.eulerAngles.z);
+            stream.SendNext(transform.rotation.eulerAngles.y);
         }
 
         if (stream.IsReading)
         {
-            var rotZ = (float)stream.ReceiveNext();
-            transform.rotation = Quaternion.Euler(0, 0, rotZ);
+            var rotY = (float)stream.ReceiveNext();
+            transform.rotation = Quaternion.Euler(0, rotY, 0);
         }
     }
 
@@ -79,12 +121,12 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
 
         var dd = new DamageData { Damage = damage, OwnerId = photonView.ViewID };
 
-        var p = Instantiate(projectile, transform.position, Quaternion.Euler(0, 0, transform.rotation.eulerAngles.z));
+        var p = Instantiate(projectile, transform.position, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0));
         p.GetComponent<Projectile>().Init(dd);
 
         var fireData = new FirePhotonData
         {
-            zAngle = transform.rotation.eulerAngles.z,
+            yAngle = transform.rotation.eulerAngles.y,
             viewID = photonView.ViewID
         };
 
@@ -110,8 +152,8 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
         {
             var dd = new DamageData { Damage = damage, OwnerId = fireData.viewID };
 
-            var p = Instantiate(projectile, transform.position, Quaternion.Euler(0, 0, fireData.zAngle));
-            p.GetComponent<SpriteRenderer>().color = Color.cyan;
+            var p = Instantiate(projectile, transform.position, Quaternion.Euler(0, fireData.yAngle, 0));
+            p.GetComponentInChildren<SpriteRenderer>().color = Color.cyan;
             p.GetComponent<Projectile>().Init(dd);
         }
     }
@@ -133,18 +175,32 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
         }
     }
 
-    public void ChoosedPerk(EventCode perkEventCode)
+    public void IncreaseChoosed(byte value)
+    {
+        var data = new IncreasePhotonData { viewID = photonView.ViewID, Value = value };
+        photonView.RaiseEvent(EventCode.Increase, data);
+    }
+
+    public void PerkChoosed(EventCode perkEventCode)
     {
         photonView.RaiseEvent(perkEventCode, photonView.ViewID);
     }
 
-    void Update()
-    {
-        hpText.transform.rotation = Quaternion.identity;
+    
+    void FixedUpdate()
+    {  
+        hpText.transform.rotation = Quaternion.Euler(90, 0, 0);
     }
 
-    //public Func<EventCode> notMinePlayerChoosedPerk;
-    public Action<EventCode, int> PerkEvent;
+    void LateUpdate()
+    {
+        hpText.transform.rotation = Quaternion.Euler(90, 0, 0);
+    }
+
+    void NotMineIncreaseSet(IncreasePhotonData increaseData)
+    {
+        IncreaseEvent?.Invoke(increaseData);
+    }
 
     public void OnEvent(EventData photonEvent)
     {
@@ -160,9 +216,7 @@ public class Player : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallbac
         {
             PerkEvent?.Invoke(EventCode.Perk3, (int)photonEvent.CustomData);
         }
-
-
-
+        
     }
 
 

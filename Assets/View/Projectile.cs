@@ -47,14 +47,15 @@ public class Projectile : MonoBehaviour
     {
         Vector3 dir = curPoint - prevPoint;
 
-        var hit = Physics2D.RaycastAll(prevPoint, dir, dir.magnitude, collisionMask);
-
-        if (hit.Length > 0 && lifetime > 0.1f)
+        //var hit = Physics2D.RaycastAll(prevPoint, dir, dir.magnitude, collisionMask);
+        var hit = Physics.RaycastAll(prevPoint, dir, dir.magnitude, collisionMask);
+        
+        if (hit.Length > 0 && lifetime > 0.08f)
         {
             var raycastHit = hit.ToList().Find(h => h.transform.GetComponent<Player>() != null);
             
             if (!raycastHit.transform)
-                return;
+                return; 
 
             var player = raycastHit.transform.GetComponent<Player>();
 

@@ -6,8 +6,7 @@ using Leopotam.Ecs;
 public class PlayerAuthoring : Authoring<PlayerComponent>
 {
     [SerializeField] float cooldownValue = 0.18f;
-    [SerializeField] int maxHealthPoint = 30;
-    [SerializeField] int damage = 1;
+    [SerializeField] public int damage = 1;
 
     protected override void Start()
     {
@@ -15,7 +14,6 @@ public class PlayerAuthoring : Authoring<PlayerComponent>
 
         entity.Get<PlayerComponent>().view = GetComponent<Player>();
         entity.Get<PlayerComponent>().cooldownValue = cooldownValue;
-        entity.Get<PlayerComponent>().maxHealthPoint = maxHealthPoint;
         entity.Get<PlayerComponent>().damage = damage;
     }
 }

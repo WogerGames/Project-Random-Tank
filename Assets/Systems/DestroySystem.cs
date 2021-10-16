@@ -15,15 +15,18 @@ sealed class DestroySystem : IEcsRunSystem
     {
         foreach (var p in players)
         {
-            players.Get1(p).view.GetComponentInChildren<SpriteRenderer>().color = Color.gray;
-            players.Get1(p).view.collider.enabled = false;
+            PlayerViewChanges(players.Get1(p).view);
+            
             var playerID = players.GetEntity(p).GetInternalId();
 
             var player = players.Get1(p);
 
+            var navMesh = player.view.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navMesh) navMesh.enabled = false;
+
             players.GetEntity(p).Del<PlayerComponent>();
 
-            LeanTween.delayedCall(3, Respawn);
+            LeanTween.delayedCall(8, Respawn);
 
             void Respawn()
             {
@@ -44,7 +47,20 @@ sealed class DestroySystem : IEcsRunSystem
         }
     }
 
-    
+    void PlayerViewChanges(Player view)
+    {
+        
+        view.collider.enabled = false;
+
+        var renderers = view.transform.GetComponentsInChildren<SpriteRenderer>();
+        foreach (var renderer in renderers)
+        {
+            var color = renderer.color;
+            color.a = 0.38f;
+            renderer.color = color;
+        }
+        
+    }
 
     
 }

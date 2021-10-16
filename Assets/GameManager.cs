@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] int countAI = 3;
     [SerializeField] float delayBetweenSpawn = .3f;
-    [SerializeField] GameObject playerAIPrefab;
+    [SerializeField] GameObject[] playerAIPrefabs;
     [SerializeField] UI ui;
 
     public Joystick rotationJoystick;
@@ -52,7 +52,17 @@ public class GameManager : MonoBehaviour
 
                 if (MultiplayerManager.IsMaster)
                 {
-                    var ai = MultiplayerManager.Spawn(playerAIPrefab, playerAIPrefab.transform.position);
+                    var randomValue = Random.Range(0, 10);
+
+                    if(randomValue > 3)
+                    {
+                        MultiplayerManager.Spawn(playerAIPrefabs[0], playerAIPrefabs[0].transform.position);
+                    }
+                    else
+                    {
+                        MultiplayerManager.Spawn(playerAIPrefabs[1], playerAIPrefabs[1].transform.position);
+                    }
+                    
                 }
             }
         }

@@ -17,8 +17,7 @@ sealed class AIFireSystem : IEcsRunSystem
         {
             ref var player = ref players.Get1(p);
 
-            if (!player.view.GetComponent<PhotonView>()) continue;
-
+            //if (!player.view.GetComponent<PhotonView>()) continue;
 
             if (players.Get2(p).enemyTarget && player.cooldownRate >= player.cooldownValue)
             {

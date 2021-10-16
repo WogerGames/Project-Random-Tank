@@ -9,7 +9,7 @@ sealed class Perk2System : IEcsRunSystem
     {
         foreach (var p in players)
         {
-            players.Get1(p).maxHealthPoint += 20;
+            players.Get2(p).MaxValue += 20;
             players.Get2(p).Value += 20;
             UnityEngine.Debug.Log("ÆÈÇÀ");
         }

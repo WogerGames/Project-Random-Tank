@@ -9,9 +9,8 @@ sealed class ProjectileMoveSystem : IEcsRunSystem
     {
         foreach (var b in bullets)
         {
-
             var go = bullets.Get2(b).go;
-            go.transform.position += go.transform.up * Time.deltaTime * 15;
+            go.transform.position += go.transform.forward * Time.deltaTime * 15;
         }
     }
 }

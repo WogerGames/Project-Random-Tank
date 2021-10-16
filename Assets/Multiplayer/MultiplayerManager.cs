@@ -49,7 +49,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
         PhotonPeer.RegisterType(typeof(EventHpContent), 012, SerializeEventHpContent, DeserializeEventHpContent);
         PhotonPeer.RegisterType(typeof(FirePhotonData), 011, SerializeEventTurnContent, DeserializeEventTurnContent);
         PhotonPeer.RegisterType(typeof(EnemyHealthPoint), 015, SerializeHealthPoint, DeserializeEnemyHealthPoint);
-        //PhotonPeer.RegisterType(typeof(CreateDiceParams), 017, SerializeCreateDiceParams, DeserializeCreateDiceParams);
+        PhotonPeer.RegisterType(typeof(IncreasePhotonData), 088, SerializeIncreaseData, DeserializeIncreaseData);
 
     }
 
@@ -293,6 +293,10 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     {
                         (actor as ParamMethods<FirePhotonData>).paramMethod?.Invoke((FirePhotonData)photonEvent.CustomData);
                     }
+                    if (data is IncreasePhotonData)
+                    {
+                        (actor as ParamMethods<IncreasePhotonData>).paramMethod?.Invoke((IncreasePhotonData)photonEvent.CustomData);
+                    }
                 }
 
             }
@@ -327,7 +331,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
         FirePhotonData result = new FirePhotonData
         {
             viewID = BitConverter.ToInt32(data, 0),
-            zAngle = BitConverter.ToSingle(data, 4)
+            yAngle = BitConverter.ToSingle(data, 4)
         };
         return result;
     }
@@ -337,7 +341,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
         FirePhotonData ehc = (FirePhotonData)obj;
         byte[] result = new byte[8];
         BitConverter.GetBytes(ehc.viewID).CopyTo(result, 0);
-        BitConverter.GetBytes(ehc.zAngle).CopyTo(result, 4);
+        BitConverter.GetBytes(ehc.yAngle).CopyTo(result, 4);
         return result;
     }
 
@@ -385,13 +389,32 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks, IOnEventCallback
         BitConverter.GetBytes(cdp.pos.y).CopyTo(result, 12);
         return result;
     }
+
+    public static object DeserializeIncreaseData(byte[] data)
+    {
+        IncreasePhotonData result = new IncreasePhotonData
+        {
+            viewID = BitConverter.ToInt32(data, 0),
+            Value = data[4]
+        };
+        return result;
+    }
+
+    public static byte[] SerializeIncreaseData(object obj)
+    {
+        IncreasePhotonData ehc = (IncreasePhotonData)obj;
+        byte[] result = new byte[5];
+        BitConverter.GetBytes(ehc.viewID).CopyTo(result, 0);
+        result[4] = ehc.Value;
+        return result;
+    }
     #endregion
 
 }
 
 public class FirePhotonData
 {
-    public float zAngle;
+    public float yAngle;
     public int viewID;
 }
 
@@ -399,6 +422,12 @@ public class EventHpContent
 {
     public int viewId;
     public int hp;
+}
+
+public class IncreasePhotonData
+{
+    public int viewID;
+    public byte Value;
 }
 
 public enum EventCode
@@ -410,10 +439,17 @@ public enum EventCode
     EnemySetHealthPoint = 11,
     EnemyDestroyed = 69,
     
+    Increase = 88,
     // PERKS
     Perk1 = 30,
     Perk2 = 31,
-    Perk3 = 32
+    Perk3 = 32,
+    Perk4 = 32,
+    Perk5 = 32,
+    Perk6 = 32,
+    Perk7 = 32,
+    Perk8 = 32,
+    Perk9 = 32
 }
 
 public class EventAction

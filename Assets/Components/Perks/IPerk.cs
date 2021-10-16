@@ -1,6 +1,7 @@
 using Leopotam.Ecs;
+using UnityEngine;
 
-public interface IPerk  { }
+public interface IPerk { }
 
 public static class PerkExtension
 {
@@ -22,6 +23,7 @@ public static class PerkExtension
             return EventCode.Perk3;
         }
 
+        Debug.LogError($"Нет правила для перка {perk}");
         return default;
     }
 
@@ -40,6 +42,7 @@ public static class PerkExtension
             return new Perk3();
         }
 
+        Debug.LogError($"Нет правила для перка {eventCode}");
         return default;
     }
 }

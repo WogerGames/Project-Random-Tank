@@ -2,7 +2,7 @@
 public class DamageData
 {
     public int OwnerId;
-    public int Damage;
+    public int Damage { get; set; }
     public int Key => GetHashCode();
 
     public DamageData()

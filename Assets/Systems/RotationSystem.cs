@@ -21,14 +21,14 @@ sealed class RotationSystem : IEcsRunSystem
             {
                 
                 var direction = gameManager.rotationJoystick.Direction;
-                direction.x *= -1f;
+                //direction.y *= -1f;
                 float angleTarget = Vector2.SignedAngle(direction, Vector2.up);
-                float angleCurrent = view.transform.rotation.eulerAngles.z;
+                float angleCurrent = view.transform.rotation.eulerAngles.y;
 
                 
                 float angle = Mathf.LerpAngle(angleCurrent, angleTarget, .3f);
                 
-                Quaternion rotation = Quaternion.Euler(0, 0, angle);
+                Quaternion rotation = Quaternion.Euler(0, angle, 0);
 
                 view.transform.rotation = rotation;
             }
